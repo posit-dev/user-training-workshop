@@ -1,6 +1,6 @@
 ---
 title: "Temporal Progress Report"
-format: html
+format: email
 ---
 
 ```{r setup, include=FALSE}
@@ -46,7 +46,7 @@ progress_data <- tibble(
   )
 
 # Create stacked bar chart with proper layering
-ggplot(progress_data, aes(x = period)) +
+time_plot <- ggplot(progress_data, aes(x = period)) +
   geom_col(aes(y = 1), fill = "#E8E8E8", width = 0.7) +  # Full bar background first
   geom_col(aes(y = progress), fill = "#2E86AB", width = 0.7) +  # Progress on top
   geom_text(aes(y = progress, label = label), vjust = -0.5, size = 4, fontface = "bold") +
@@ -62,6 +62,8 @@ ggplot(progress_data, aes(x = period)) +
     plot.title = element_text(face = "bold", size = 16),
     panel.grid.major.x = element_blank()
   )
+
+time_plot
 ```
 
 
@@ -78,3 +80,18 @@ summary_table <- progress_data |>
 
 knitr::kable(summary_table, caption = "Progress Through Different Time Periods", align = 'c')
 ```
+
+
+::: {.email}
+
+::: {.subject}
+Time Reminder
+:::
+
+```{r}
+#| echo: false
+
+time_plot
+```
+
+:::
