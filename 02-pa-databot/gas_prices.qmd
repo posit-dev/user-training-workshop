@@ -1,0 +1,30 @@
+---
+title: "Gas Prices Analysis"
+format: html
+editor: source
+---
+
+```{r}
+#| label: setup
+#| echo: false
+
+library(tidyverse)
+
+gas_data <- readr::read_csv("weekly_gas_prices.csv")
+```
+
+## Weekly Gas Prices Analysis
+
+The dataset contains weekly gas prices over several years. Below is a plot summarizing the trends in gas prices.
+
+```{r}
+#| label: gas_prices_plot
+#| code-fold: true
+
+gas_data |> 
+  ggplot(aes(x = date, y = price, color = "blue")) +
+  geom_line() +
+  labs(title = "Weekly Gas Prices Over Time",
+       x = "Week",
+       y = "Price")
+```

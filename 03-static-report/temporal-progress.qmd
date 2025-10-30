@@ -1,0 +1,80 @@
+---
+title: "Temporal Progress Report"
+format: html
+---
+
+```{r setup, include=FALSE}
+library(ggplot2)
+library(lubridate)
+library(dplyr)
+library(tidyr)
+
+# Get current timestamp
+now <- Sys.time()
+```
+
+## Current Moment
+
+**Report generated at:** `r format(now, "%Y-%m-%d %H:%M:%S")`
+
+```{r}
+#| echo: false
+#| fig.width: 10
+#| fig.height: 8
+
+# Calculate progress through different time periods
+progress_data <- tibble(
+  period = factor(c("Minute", "Hour", "Day", "Week", "Month", "Year"),
+                  levels = c("Minute", "Hour", "Day", "Week", "Month", "Year")),
+  progress = c(
+    second(now) / 60,  # Progress through current minute
+    (minute(now) * 60 + second(now)) / 3600,  # Progress through current hour
+    (hour(now) * 3600 + minute(now) * 60 + second(now)) / 86400,  # Progress through day
+    (wday(now, week_start = 1) - 1 +
+      (hour(now) * 3600 + minute(now) * 60 + second(now)) / 86400) / 7,  # Progress through week
+    (day(now) - 1 +
+      (hour(now) * 3600 + minute(now) * 60 + second(now)) / 86400) /
+      days_in_month(now),  # Progress through month
+    (yday(now) - 1 +
+      (hour(now) * 3600 + minute(now) * 60 + second(now)) / 86400) /
+      (365 + leap_year(now))  # Progress through year
+  )
+) |>
+  mutate(
+    remaining = 1 - progress,
+    label = paste0(round(progress * 100, 2), "%")
+  )
+
+# Create stacked bar chart with proper layering
+ggplot(progress_data, aes(x = period)) +
+  geom_col(aes(y = 1), fill = "#E8E8E8", width = 0.7) +  # Full bar background first
+  geom_col(aes(y = progress), fill = "#2E86AB", width = 0.7) +  # Progress on top
+  geom_text(aes(y = progress, label = label), vjust = -0.5, size = 4, fontface = "bold") +
+  scale_y_continuous(labels = scales::percent, limits = c(0, 1.1)) +
+  labs(
+    title = "Progress Through Time Periods",
+    subtitle = paste("As of", format(now, "%H:%M:%S on %B %d, %Y")),
+    x = NULL,
+    y = "Progress"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    panel.grid.major.x = element_blank()
+  )
+```
+
+
+## Summary Table
+
+```{r}
+#| echo: false
+#| message: false
+
+# Create summary table
+summary_table <- progress_data |>
+  select(Period = period, Progress = progress) |>
+  mutate(Progress = paste0(round(Progress * 100, 2), "%"))
+
+knitr::kable(summary_table, caption = "Progress Through Different Time Periods", align = 'c')
+```
