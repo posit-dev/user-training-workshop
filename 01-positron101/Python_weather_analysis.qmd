@@ -1,0 +1,155 @@
+---
+title: "Weather Data Analysis"
+format: html
+editor: source
+---
+
+## Weather Data Analysis
+
+This document analyzes weather patterns from the weather.csv file.
+
+```{python}
+#| label: setup
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from datetime import datetime
+```
+
+```{python}
+#| label: load-data
+
+# Load the weather data
+weather_data = pd.read_csv("weather.csv")
+```
+
+## Data Transformation
+
+```{python}
+#| label: data-transformation
+
+# Convert date to proper date format
+weather_data['date'] = pd.to_datetime(weather_data['date'])
+
+# Create temperature categories
+def categorize_temp(temp):
+    if pd.isna(temp):
+        return None
+    elif temp < 35:
+        return "Cold"
+    elif temp < 55:
+        return "Cool"
+    else:
+        return "Warm"
+
+weather_data['temp_category'] = weather_data['temperature_f'].apply(categorize_temp)
+
+# Create season variable based on month
+def get_season(date):
+    month = date.month
+    if month in [12, 1, 2]:
+        return "Winter"
+    elif month in [3, 4, 5]:
+        return "Spring"
+    elif month in [6, 7, 8]:
+        return "Summer"
+    elif month in [9, 10, 11]:
+        return "Fall"
+    return None
+
+weather_data['season'] = weather_data['date'].apply(get_season)
+
+# Create high humidity indicator
+weather_data['high_humidity'] = weather_data['humidity_pct'].apply(
+    lambda x: "High" if x > 75 else "Normal"
+)
+
+# Create precipitation category
+def categorize_precip(precip):
+    if pd.isna(precip):
+        return None
+    elif precip == 0:
+        return "None"
+    elif precip <= 0.25:
+        return "Light"
+    elif precip <= 0.75:
+        return "Moderate"
+    else:
+        return "Heavy"
+
+weather_data['precip_category'] = weather_data['precipitation_in'].apply(categorize_precip)
+
+# Summary of new variables
+print("Temperature Category:")
+print(weather_data['temp_category'].value_counts())
+print("\nSeason:")
+print(weather_data['season'].value_counts())
+print("\nHigh Humidity:")
+print(weather_data['high_humidity'].value_counts())
+print("\nPrecipitation Category:")
+print(weather_data['precip_category'].value_counts())
+```
+
+## Visualization
+
+```{python}
+#| label: visualization
+
+# Filter data for visualization
+plot_data = weather_data.dropna(subset=['temperature_f', 'weather_condition'])
+
+# Create a boxplot showing temperature distribution by weather condition
+plt.figure(figsize=(12, 6))
+sns.boxplot(data=plot_data, x='weather_condition', y='temperature_f',
+            hue='weather_condition', palette='Set2', legend=False)
+sns.stripplot(data=plot_data, x='weather_condition', y='temperature_f',
+              color='black', alpha=0.3, size=2)
+
+plt.title('Temperature Distribution\nAnalysis of 2024 Weather Data',
+          fontsize=16, fontweight='bold')
+plt.xlabel('Weather Condition', fontsize=12)
+plt.ylabel('Temperature (°F)', fontsize=12)
+plt.xticks(rotation=45, ha='right')
+plt.tight_layout()
+plt.show()
+```
+
+## Save Results to File
+
+```{python}
+#| label: save-results
+
+# Create summary statistics by weather condition
+weather_summary = plot_data.groupby('weather_condition').agg(
+    count=('weather_condition', 'size'),
+    avg_temp=('temperature_f', lambda x: round(x.mean(), 1)),
+    avg_humidity=('humidity_pct', lambda x: round(x.mean(), 1)),
+    avg_wind_speed=('wind_speed_mph', lambda x: round(x.mean(), 1)),
+    total_precipitation=('precipitation_in', lambda x: round(x.sum(), 2))
+).reset_index()
+
+weather_summary = weather_summary.sort_values('avg_temp', ascending=False)
+
+# Display the summary
+print(weather_summary.to_string(index=False))
+
+# Save the summary to a CSV file
+weather_summary.to_csv('weather_summary.csv', index=False)
+
+# Also save the enhanced dataset with new variables
+weather_data.to_csv('weather_analysis_enhanced.csv', index=False)
+
+print("\nFiles saved successfully:")
+print("- weather_summary.csv: Summary statistics by weather condition")
+print("- weather_analysis_enhanced.csv: Original data with new variables")
+```
+
+## Key Findings
+
+Based on the analysis:
+
+-   The dataset contains weather data for the full year 2024
+-   Temperature varies significantly by weather condition, with sunny days typically being warmest
+-   Snow conditions show the lowest average temperatures
+-   The enhanced dataset includes seasonal classifications and temperature categories for further analysis

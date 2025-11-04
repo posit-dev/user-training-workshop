@@ -1,0 +1,143 @@
+---
+title: "Weather Data Analysis"
+format: html
+editor: source
+---
+
+## Weather Data Analysis
+
+This document analyzes weather patterns from the data.csv file.
+
+```{r}
+#| label: setup
+
+library(ggplot2)
+library(dplyr)
+library(readr)
+```
+
+```{r}
+#| label: load-data
+
+# Load the weather data
+weather_data <- read_csv("weather.csv")
+```
+
+## Data Transformation
+
+```{r}
+#| label: data-transformation
+
+# Create new variables for analysis
+weather_analysis <- weather_data |>
+  mutate(
+    # Convert date to proper date format
+    date = as.Date(date),
+
+    # Create temperature categories
+    temp_category = case_when(
+      temperature_f < 35 ~ "Cold",
+      temperature_f >= 35 & temperature_f < 55 ~ "Cool",
+      temperature_f >= 55 ~ "Warm",
+      TRUE ~ NA_character_
+    ),
+
+    # Create season variable based on month
+    month = format(date, "%m"),
+    season = case_when(
+      month %in% c("12", "01", "02") ~ "Winter",
+      month %in% c("03", "04", "05") ~ "Spring",
+      month %in% c("06", "07", "08") ~ "Summer",
+      month %in% c("09", "10", "11") ~ "Fall",
+      TRUE ~ NA_character_
+    ),
+
+    # Create high humidity indicator
+    high_humidity = ifelse(humidity_pct > 75, "High", "Normal"),
+
+    # Create precipitation category
+    precip_category = case_when(
+      precipitation_in == 0 ~ "None",
+      precipitation_in > 0 & precipitation_in <= 0.25 ~ "Light",
+      precipitation_in > 0.25 & precipitation_in <= 0.75 ~ "Moderate",
+      precipitation_in > 0.75 ~ "Heavy",
+      TRUE ~ NA_character_
+    )
+  )
+
+# Summary of new variables
+summary(weather_analysis[c("temp_category", "season", "high_humidity", "precip_category")])
+```
+
+## Visualization
+
+```{r}
+#| label: visualization
+
+# Create a ggplot showing temperature distribution by weather condition
+weather_plot <- weather_analysis |>
+  filter(!is.na(temperature_f) & !is.na(weather_condition)) |>
+  ggplot(aes(x = weather_condition, y = temperature_f, fill = weather_condition)) +
+  geom_boxplot(alpha = 0.7) +
+  geom_jitter(width = 0.2, alpha = 0.3, size = 0.8) +
+  labs(
+    title = "Temperature Distribution",
+    subtitle = "Analysis of 2024 Weather Data",
+    x = "Weather Condition",
+    y = "Temperature (°F)",
+    fill = "Weather Condition"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 16, face = "bold"),
+    plot.subtitle = element_text(size = 12),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "none"
+  ) +
+  scale_fill_brewer(type = "qual", palette = "Set2")
+
+# Display the plot
+weather_plot
+```
+
+## Save Results to File
+
+```{r}
+#| label: save-results
+
+# Create summary statistics by weather condition
+weather_summary <- weather_analysis |>
+  filter(!is.na(temperature_f) & !is.na(weather_condition)) |>
+  group_by(weather_condition) |>
+  summarise(
+    count = n(),
+    avg_temp = round(mean(temperature_f, na.rm = TRUE), 1),
+    avg_humidity = round(mean(humidity_pct, na.rm = TRUE), 1),
+    avg_wind_speed = round(mean(wind_speed_mph, na.rm = TRUE), 1),
+    total_precipitation = round(sum(precipitation_in, na.rm = TRUE), 2),
+    .groups = "drop"
+  ) |>
+  arrange(desc(avg_temp))
+
+# Display the summary
+print(weather_summary)
+
+# Save the summary to a CSV file in the working directory
+write_csv(weather_summary, "weather_summary.csv")
+
+# Also save the enhanced dataset with new variables
+write_csv(weather_analysis, "weather_analysis_enhanced.csv")
+
+cat("Files saved successfully:\n")
+cat("- weather_summary.csv: Summary statistics by weather condition\n")
+cat("- weather_analysis_enhanced.csv: Original data with new variables\n")
+```
+
+## Key Findings
+
+Based on the analysis:
+
+-   The dataset contains weather data for the full year 2024
+-   Temperature varies significantly by weather condition, with sunny days typically being warmest
+-   Snow conditions show the lowest average temperatures
+-   The enhanced dataset includes seasonal classifications and temperature categories for further analysis
