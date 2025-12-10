@@ -73,7 +73,7 @@ app_ui = ui.page_sidebar(
             selected="flipper_length_mm"
         )
     ),
-    ui.h2("Palmer Penguins Analysis - Python"),
+    ui.h2("Palmer Penguins Analysis - Python V2"),
     ui.layout_columns(
         ui.card(
             ui.card_header("Data Visualization"),
