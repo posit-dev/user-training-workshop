@@ -73,7 +73,7 @@ app_ui = ui.page_sidebar(
             selected="flipper_length_mm"
         )
     ),
-    ui.h2("Palmer Penguins Analysis"),
+    ui.h2("Palmer Penguins Analysis - Shiny App"),
     ui.layout_columns(
         ui.card(
             ui.card_header("Data Visualization"),
