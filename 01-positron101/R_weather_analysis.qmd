@@ -9,24 +9,14 @@ editor: source
 This document analyzes weather patterns from the data.csv file.
 
 ```{r}
-#| label: setup
+#| label: analysis
 
 library(ggplot2)
 library(dplyr)
 library(readr)
-```
-
-```{r}
-#| label: load-data
 
 # Load the weather data
 weather_data <- read_csv("weather.csv")
-```
-
-## Data Transformation
-
-```{r}
-#| label: data-transformation
 
 # Create new variables for analysis
 weather_analysis <- weather_data |>
@@ -67,12 +57,6 @@ weather_analysis <- weather_data |>
 
 # Summary of new variables
 summary(weather_analysis[c("temp_category", "season", "high_humidity", "precip_category")])
-```
-
-## Visualization
-
-```{r}
-#| label: visualization
 
 # Create a ggplot showing temperature distribution by weather condition
 weather_plot <- weather_analysis |>

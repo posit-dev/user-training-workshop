@@ -9,25 +9,15 @@ editor: source
 This document analyzes weather patterns from the weather.csv file.
 
 ```{python}
-#| label: setup
+#| label: analysis
 
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import datetime
-```
-
-```{python}
-#| label: load-data
 
 # Load the weather data
 weather_data = pd.read_csv("weather.csv")
-```
-
-## Data Transformation
-
-```{python}
-#| label: data-transformation
 
 # Convert date to proper date format
 weather_data['date'] = pd.to_datetime(weather_data['date'])
@@ -89,12 +79,6 @@ print("\nHigh Humidity:")
 print(weather_data['high_humidity'].value_counts())
 print("\nPrecipitation Category:")
 print(weather_data['precip_category'].value_counts())
-```
-
-## Visualization
-
-```{python}
-#| label: visualization
 
 # Filter data for visualization
 plot_data = weather_data.dropna(subset=['temperature_f', 'weather_condition'])
