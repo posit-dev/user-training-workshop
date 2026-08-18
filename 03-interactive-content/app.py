@@ -35,7 +35,7 @@ app_ui = ui.page_sidebar(
         ui.input_select("x_var", "X Variable:", choices=VARS, selected="bill_length_mm"),
         ui.input_select("y_var", "Y Variable:", choices=VARS, selected="flipper_length_mm"),
     ),
-    ui.h2("Palmer Penguins Analysis"),
+    ui.h2("COOOOOL PENGUINS!!!!!!"),
     ui.card(ui.card_header("Data Visualization"), ui.output_plot("penguin_plot")),
 )
 
